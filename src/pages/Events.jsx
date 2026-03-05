@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import api from '../api'
 import Table from '../components/Table'
 import SearchBar from '../components/SearchBar'
 import Skeleton from '../components/Skeleton'
@@ -11,7 +11,7 @@ export default function Events(){
 
   useEffect(()=>{
     setLoading(true)
-    axios.get('http://localhost:4000/api/events')
+    api.get('/api/events')
       .then(r=> setEvents(r.data||[]))
       .catch(()=> setEvents([]))
       .finally(()=> setLoading(false))

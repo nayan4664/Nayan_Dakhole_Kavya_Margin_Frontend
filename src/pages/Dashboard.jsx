@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import api from '../api'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts'
 import Forecast from '../components/Forecast'
 import { useNavigate } from 'react-router-dom'
@@ -8,7 +8,7 @@ export default function Dashboard(){
   const [metrics, setMetrics] = useState(null)
 
   useEffect(()=>{
-    axios.get('http://localhost:4000/api/metrics')
+    api.get('/api/metrics')
       .then(r=> setMetrics(r.data))
       .catch(console.error)
   },[])
@@ -21,9 +21,9 @@ export default function Dashboard(){
   const navigate = useNavigate()
 
   function onRevenueSliceClick(name){
-    if(name==='Products'){ navigate('/products?q=') }
-    else if(name==='Services'){ navigate('/subscriptions?q=service') }
-    else if(name==='Retainer'){ navigate('/subscriptions?q=retainer') }
+    if(name==='Products'){ navigate('/projects?q=product') }
+    else if(name==='Services'){ navigate('/projects?q=service') }
+    else if(name==='Retainer'){ navigate('/employees?q=retainer') }
   }
 
   function downloadCsv(rows, filename){

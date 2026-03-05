@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import api from '../api'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, BarChart, Bar } from 'recharts'
 
 export default function Reports(){
@@ -7,7 +7,7 @@ export default function Reports(){
   const [range, setRange] = useState('30d')
 
   useEffect(()=>{
-    axios.get(`http://localhost:4000/api/metrics?range=${encodeURIComponent(range)}`)
+    api.get(`/api/metrics?range=${encodeURIComponent(range)}`)
       .then(r=> setMetrics(r.data))
       .catch(()=> setMetrics(null))
   },[range])

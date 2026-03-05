@@ -13,7 +13,12 @@ export default function Topbar(){
 
   return (
     <header className="topbar">
-      <div className="topbar-left">Kavya Margin</div>
+      <div className="topbar-left" style={{display:'flex',alignItems:'center',gap:8}}>
+        <a href="/" style={{display:'inline-flex',alignItems:'center',gap:8,color:'inherit',textDecoration:'none'}}>
+          <img src="/logo.png" alt="Kavya Margin" style={{height:24}} onError={(e)=>{ e.currentTarget.style.display='none' }} />
+          <span>Kavya Margin</span>
+        </a>
+      </div>
       <div className="topbar-right">
         <button className="ghost" onClick={()=> setTheme(theme==='dark' ? 'light' : 'dark')}>
           {theme==='dark' ? 'Light' : 'Dark'}

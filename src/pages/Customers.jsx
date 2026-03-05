@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import api from '../api'
 import Table from '../components/Table'
 import SearchBar from '../components/SearchBar'
 
@@ -10,13 +10,13 @@ export default function Customers(){
 
   useEffect(()=>{ fetchCustomers() },[])
   function fetchCustomers(){
-    axios.get('http://localhost:4000/api/customers').then(r=>setCustomers(r.data)).catch(console.error)
+    api.get('/api/customers').then(r=>setCustomers(r.data)).catch(console.error)
   }
 
   async function add(e){
     e.preventDefault()
     const c = { name, email }
-    const res = await axios.post('http://localhost:4000/api/customers', c)
+    const res = await api.post('/api/customers', c)
     setCustomers(prev => [res.data, ...prev])
     setName(''); setEmail('')
   }

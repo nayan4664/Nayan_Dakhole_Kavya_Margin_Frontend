@@ -1,0 +1,1 @@
+import{R as e}from"./index-DSF3Wc9J.js";function o({value:a,onChange:t,placeholder:r="Search..."}){return e.createElement("div",{className:"toolbar"},e.createElement("input",{value:a,onChange:n=>t(n.target.value),placeholder:r}))}export{o as S};

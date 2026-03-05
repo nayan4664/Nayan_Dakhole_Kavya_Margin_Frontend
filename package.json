@@ -1,6 +1,7 @@
 {
   "name": "kavya-margin-frontend",
   "version": "0.1.0",
+  "description": "Frontend for Kavya Margin",
   "private": true,
   "scripts": {
     "dev": "vite",

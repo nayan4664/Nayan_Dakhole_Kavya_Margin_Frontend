@@ -25,6 +25,10 @@ export function AuthProvider({ children }){
     setUser(u); setToken(fakeToken)
     localStorage.setItem('km_auth', JSON.stringify({ user: u, token: fakeToken }))
   }
+  function register({ company, admin, email, password }){
+    if(!company || !admin) throw new Error('Enter company and admin')
+    login(email, password)
+  }
 
   function logout(){
     setUser(null); setToken(null)
@@ -34,7 +38,7 @@ export function AuthProvider({ children }){
   const value = useMemo(()=>({
     user, token, initializing,
     isAuthenticated: !!token,
-    login, logout
+    login, logout, register
   }),[user, token, initializing])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
