@@ -15,9 +15,13 @@ export default function Dashboard(){
 
   const stats = metrics ? metrics.stats : {}
   const [range, setRange] = useState('30d')
-  const revenueSplit = metrics?.revenueSplit || [{name:'Products', value:40},{name:'Services', value:35},{name:'Retainer', value:25}]
-  const riskSplit = metrics?.riskSplit || [{name:'Low', value:60},{name:'Medium', value:30},{name:'High', value:10}]
-  const COLORS = ['#22d3ee','#a78bfa','#f59e0b','#22c55e','#ef4444']
+
+  const [display, setDisplay] = useState({
+    mrrSeries: [{mrr:800},{mrr:900},{mrr:980},{mrr:1020}],
+    revenueSplit: [{name:'Products', value:40},{name:'Services', value:35},{name:'Retainer', value:25}],
+    riskSplit: [{name:'Low', value:60},{name:'Medium', value:30},{name:'High', value:10}]
+  })
+  const COLORS = ['var(--primary)', 'var(--accent)', 'var(--warning)', 'var(--success)', 'var(--danger)']
   const navigate = useNavigate()
 
   function onRevenueSliceClick(name){
@@ -25,6 +29,34 @@ export default function Dashboard(){
     else if(name==='Services'){ navigate('/projects?q=service') }
     else if(name==='Retainer'){ navigate('/employees?q=retainer') }
   }
+
+  // recompute display data when metrics or range changes
+  useEffect(()=>{
+    const days = range === '7d' ? 7 : range === '90d' ? 90 : 30
+
+    // derive mrrSeries: prefer backend data, otherwise generate fallback
+    let mrrSeries = metrics?.mrrSeries || null
+    if(Array.isArray(mrrSeries) && mrrSeries.length){
+      // take last `days` points if available
+      mrrSeries = mrrSeries.slice(-Math.min(days, mrrSeries.length))
+    }else{
+      // generate synthetic series for the selected range
+      const len = Math.min(Math.max(Math.floor(days/7), 4), 20)
+      mrrSeries = Array.from({length: len}).map((_,i)=>({ day: `P${i+1}`, mrr: Math.round(800 + (i * (range==='90d'?6:2)) + (Math.sin(i)*50)) }))
+    }
+
+    // compute splits (normalize to percentages)
+    const norm = arr => {
+      const a = Array.isArray(arr) && arr.length ? arr : []
+      const sum = a.reduce((s,x)=> s + (x.value||0), 0) || 1
+      return a.map(x=> ({ name: x.name, value: Math.round((x.value||0) / sum * 100) }))
+    }
+
+    const revenueSplit = metrics?.revenueSplit ? norm(metrics.revenueSplit) : norm([{name:'Products', value:40},{name:'Services', value:35},{name:'Retainer', value:25}])
+    const riskSplit = metrics?.riskSplit ? norm(metrics.riskSplit) : norm([{name:'Low', value:60},{name:'Medium', value:30},{name:'High', value:10}])
+
+    setDisplay({ mrrSeries, revenueSplit, riskSplit })
+  }, [metrics, range])
 
   function downloadCsv(rows, filename){
     const headers = Object.keys(rows[0]||{name:'',value:''})
@@ -56,8 +88,8 @@ export default function Dashboard(){
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Line type="monotone" dataKey="activations" stroke="#01a3d1" />
-                  <Line type="monotone" dataKey="cancellations" stroke="#f29e76" />
+                  <Line type="monotone" dataKey="activations" stroke="var(--primary)" />
+                  <Line type="monotone" dataKey="cancellations" stroke="var(--warning)" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -82,16 +114,16 @@ export default function Dashboard(){
             <div className="card">
               <h3>Revenue Split</h3>
               <div className="toolbar">
-                <button className="ghost" onClick={()=>downloadCsv(revenueSplit,'revenue-split.csv')}>Export CSV</button>
+                <button className="ghost" onClick={()=>downloadCsv(display.revenueSplit,'revenue-split.csv')}>Export CSV</button>
               </div>
               <div style={{height:240}}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={revenueSplit} dataKey="value" nameKey="name" outerRadius={90}>
-                      {revenueSplit.map((e,i)=> <Cell key={i} fill={COLORS[i%COLORS.length]} onClick={()=>onRevenueSliceClick(e.name)} />)}
+                    <Pie data={display.revenueSplit} dataKey="value" nameKey="name" outerRadius={90} labelLine={false} label={({payload})=> `${payload.name}: ${payload.value}%`}>
+                      {display.revenueSplit.map((e,i)=> <Cell key={i} fill={COLORS[i%COLORS.length]} onClick={()=>onRevenueSliceClick(e.name)} />)}
                     </Pie>
                     <Legend />
-                    <Tooltip />
+                    <Tooltip formatter={(value)=> `${value}%`} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -99,16 +131,16 @@ export default function Dashboard(){
             <div className="card">
               <h3>Risk Distribution</h3>
               <div className="toolbar">
-                <button className="ghost" onClick={()=>downloadCsv(riskSplit,'risk-distribution.csv')}>Export CSV</button>
+                <button className="ghost" onClick={()=>downloadCsv(display.riskSplit,'risk-distribution.csv')}>Export CSV</button>
               </div>
               <div style={{height:240}}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={riskSplit} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90}>
-                      {riskSplit.map((e,i)=> <Cell key={i} fill={COLORS[i%COLORS.length]} />)}
+                    <Pie data={display.riskSplit} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} labelLine={false} label={({payload})=> `${payload.name}: ${payload.value}%`}>
+                      {display.riskSplit.map((e,i)=> <Cell key={i} fill={COLORS[i%COLORS.length]} />)}
                     </Pie>
                     <Legend />
-                    <Tooltip />
+                    <Tooltip formatter={(value)=> `${value}%`} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -125,8 +157,8 @@ export default function Dashboard(){
             <h4>Net Revenue</h4>
             <div className="value">{stats ? `₹${stats.totalMRR}` : '-'}</div>
             <div style={{height:60}}>
-              <ResponsiveContainer width="100%" height={60}>
-                <BarChart data={[{v:10},{v:30},{v:20}]}> <Bar dataKey="v" fill="#7ed321" /></BarChart>
+                <ResponsiveContainer width="100%" height={60}>
+                <BarChart data={[{v:10},{v:30},{v:20}]}> <Bar dataKey="v" fill="var(--success)" /></BarChart>
               </ResponsiveContainer>
             </div>
           </div>
@@ -144,7 +176,7 @@ export default function Dashboard(){
               <div className="value">{stats && stats.benchCost!=null ? `₹${stats.benchCost}` : '₹24,000'}</div>
             </div>
           </div>
-          <Forecast series={(metrics?.mrrSeries) || [{mrr:800},{mrr:900},{mrr:980},{mrr:1020}]} />
+          <Forecast series={display.mrrSeries || (metrics?.mrrSeries) || [{mrr:800},{mrr:900},{mrr:980},{mrr:1020}]} />
         </div>
       </div>
     </div>

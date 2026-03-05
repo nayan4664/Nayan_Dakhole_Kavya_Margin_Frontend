@@ -37,7 +37,7 @@ export default function Reports(){
                 <XAxis dataKey="day" />
                 <YAxis />
                 <Tooltip />
-                <Area type="monotone" dataKey="mrr" stroke="#22d3ee" fill="#22d3ee22" />
+                <Area type="monotone" dataKey="mrr" stroke="var(--primary)" fill="rgba(34,211,238,0.13)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -51,7 +51,7 @@ export default function Reports(){
                 <XAxis hide />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="v" fill="#a78bfa" />
+                <Bar dataKey="v" fill="var(--accent)" />
               </BarChart>
             </ResponsiveContainer>
           </div>
